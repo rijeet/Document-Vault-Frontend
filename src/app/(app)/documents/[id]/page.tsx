@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { getThumbnailUrl } from "@/lib/cloudinary";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { FileText, Image as ImageIcon, File as FileIcon, ExternalLink } from "lucide-react";
@@ -36,30 +37,63 @@ interface FileRowProps {
   mimeType: string;
 }
 function FileRow(props: FileRowProps) {
+  const [imgError, setImgError] = useState(false);
   const Icon = getFileIcon(props.mimeType);
+
+  const thumbnailUrl = getThumbnailUrl(
+    {
+      secureUrl: props.url,
+      mimeType: props.mimeType,
+    },
+    "detail",
+  );
+
   const label = `Open ${props.name}`;
 
   return (
-    <li className="flex items-center gap-3 rounded-md border border-border-subtle bg-surface px-3 py-2">
-      <Icon className="h-4 w-4 shrink-0 text-text-secondary" />
-
-      <span className="flex-1 truncate text-sm text-text-primary">
-        {props.name}
-      </span>
-
-      <span className="shrink-0 text-xs text-text-muted">
-        {formatBytes(props.size)}
-      </span>
-
+    <li className="overflow-hidden rounded-md border border-border-subtle bg-surface">
       <a
         href={props.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="shrink-0 rounded p-1 text-text-muted hover:bg-hover hover:text-text-primary focus-ring"
         aria-label={label}
+        className="block"
       >
-        <ExternalLink className="h-3.5 w-3.5" />
+        {thumbnailUrl && !imgError ? (
+          <div className="flex max-h-[420px] w-full items-center justify-center bg-surface-2">
+            <img
+              src={thumbnailUrl}
+              alt=""
+              className="max-h-[420px] w-full object-contain"
+              onError={() => setImgError(true)}
+            />
+          </div>
+        ) : (
+          <div className="flex h-40 w-full items-center justify-center bg-surface-2">
+            <Icon className="h-10 w-10 text-text-muted" />
+          </div>
+        )}
       </a>
+
+      <div className="flex items-center gap-3 px-3 py-2">
+        <span className="flex-1 truncate text-sm text-text-primary">
+          {props.name}
+        </span>
+
+        <span className="shrink-0 text-xs text-text-muted">
+          {formatBytes(props.size)}
+        </span>
+
+        <a
+          href={props.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 rounded p-1 text-text-muted hover:bg-hover hover:text-text-primary focus-ring"
+          aria-label={label}
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+        </a>
+      </div>
     </li>
   );
 }
