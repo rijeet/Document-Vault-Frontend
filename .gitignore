@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# Project snapshot tool (personal dev utility, not part of the app)
+generate-project-snapshot.js
+project-snapshot.md
+projectTree.md
