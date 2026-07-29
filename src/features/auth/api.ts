@@ -3,18 +3,9 @@ import type { SuccessResponse } from "@/types/api-response";
 import type { GoogleAuthResult } from "./types";
 
 export const authApi = {
-  loginWithGoogle: async (idToken: string) => {
-    const res = await apiClient.post<SuccessResponse<GoogleAuthResult>>(
-      "/auth/google",
-      { idToken },
-      { skipAuth: true },
-    );
-    setAccessToken(res.data.accessToken);
-    return res.data;
-  },
-
-  // Called on app mount to silently re-establish a session from the
-  // httpOnly refreshToken cookie (access token is in-memory only, lost on reload)
+  // Called on app mount, AND right after the OAuth redirect lands the user
+  // back on the frontend — by that point the backend has already set the
+  // refreshToken/uid cookies, so this silently picks up the new session.
   refresh: async () => {
     const res = await apiClient.post<SuccessResponse<GoogleAuthResult>>(
       "/auth/refresh",
