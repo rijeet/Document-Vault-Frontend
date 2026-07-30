@@ -1,7 +1,8 @@
 "use client";
 
-import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/features/auth/AuthProvider";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -27,14 +28,30 @@ function GoogleIcon({ className }: { className?: string }) {
 }
 
 function LoginForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const { isAuthenticated, isLoading } = useAuth();
   const error = searchParams.get("error");
   const redirectTo = searchParams.get("redirectTo");
 
-  const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
-  const googleAuthHref = `${backendUrl}/auth/google${
+  useEffect(() => {
+    if (isLoading || !isAuthenticated) return;
+    const destination =
+      redirectTo?.startsWith("/") && !redirectTo.startsWith("//") ? redirectTo : "/documents";
+    router.replace(destination);
+  }, [isAuthenticated, isLoading, redirectTo, router]);
+
+  const googleAuthHref = `/api/auth/google${
     redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ""
   }`;
+
+  if (isLoading || isAuthenticated) {
+    return (
+      <div className="w-full max-w-sm rounded-lg border border-border-subtle bg-surface p-8 text-center">
+        <p className="text-sm text-text-muted">Loading…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-sm rounded-lg border border-border-subtle bg-surface p-8 text-center">

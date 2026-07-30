@@ -1,6 +1,6 @@
 import type { ApiEnvelope, PaginatedEnvelope, ErrorResponse } from "@/types/api-response";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api";
 
 // ── In-memory access token (see auth flow decision, guidelines §9) ──
 let accessToken: string | null = null;
@@ -29,6 +29,20 @@ export class ApiError extends Error {
 // ── Refresh coordination: only one refresh call in flight at a time ──
 let refreshPromise: Promise<boolean> | null = null;
 
+/** Best-effort server-side cookie clear — always safe to call locally after. */
+export async function clearSessionCookies(): Promise<void> {
+  try {
+    await fetch(`${BASE_URL}/auth/logout`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch {
+    // Network/backend errors are fine — we still wipe local state below.
+  }
+  setAccessToken(null);
+}
+
 async function refreshAccessToken(): Promise<boolean> {
   if (!refreshPromise) {
     refreshPromise = (async () => {
@@ -38,14 +52,21 @@ async function refreshAccessToken(): Promise<boolean> {
           credentials: "include", // sends the httpOnly refreshToken cookie
           headers: { "Content-Type": "application/json" },
         });
-        if (!res.ok) return false;
+        if (!res.ok) {
+          await clearSessionCookies();
+          return false;
+        }
 
         const json = (await res.json()) as ApiEnvelope<{ accessToken: string }>;
-        if (!json.success) return false;
+        if (!json.success) {
+          await clearSessionCookies();
+          return false;
+        }
 
         setAccessToken(json.data.accessToken);
         return true;
       } catch {
+        await clearSessionCookies();
         return false;
       } finally {
         refreshPromise = null;
@@ -83,7 +104,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     if (refreshed) {
       return request<T>(path, { ...options, _isRetry: true });
     }
-    setAccessToken(null);
+    await clearSessionCookies();
     if (typeof window !== "undefined") {
       window.location.href = "/login";
     }

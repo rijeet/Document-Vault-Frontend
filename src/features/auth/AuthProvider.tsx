@@ -27,6 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const result = await authApi.refresh();
         if (!cancelled) setUser(result.user);
       } catch {
+        await authApi.clearSession();
         if (!cancelled) setUser(null);
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -38,11 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    try {
-      await authApi.logout();
-    } catch {
-      // clear local state regardless
-    }
+    await authApi.clearSession();
     setUser(null);
     router.push("/login");
   }, [router]);

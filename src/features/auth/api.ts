@@ -1,4 +1,4 @@
-import { apiClient, setAccessToken } from "@/lib/api-client";
+import { apiClient, clearSessionCookies, setAccessToken } from "@/lib/api-client";
 import type { SuccessResponse } from "@/types/api-response";
 import type { GoogleAuthResult } from "./types";
 
@@ -16,8 +16,11 @@ export const authApi = {
     return res.data;
   },
 
+  clearSession: async () => {
+    await clearSessionCookies();
+  },
+
   logout: async () => {
-    await apiClient.post("/auth/logout", undefined, { skipAuth: true });
-    setAccessToken(null);
+    await clearSessionCookies();
   },
 };

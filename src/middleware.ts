@@ -22,11 +22,6 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Already has a session, hitting /login → skip straight to the app
-  if (hasSession && isPublicPath) {
-    return NextResponse.redirect(new URL("/documents", request.url));
-  }
-
   return NextResponse.next();
 }
 
