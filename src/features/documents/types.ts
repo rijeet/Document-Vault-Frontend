@@ -11,12 +11,11 @@ export interface DocumentsQuery {
   categoryId?: string;
 }
 
-export interface CreateDocumentPayload {
+export interface CreateDocumentMetadata {
   title: string;
   description?: string;
   categoryId?: string;
   documentDate?: string;
-  files?: File[];
 }
 
 export interface UpdateDocumentPayload {

@@ -6,7 +6,7 @@ import { cn } from "@/lib/cn";
 import { formatBytes } from "@/lib/format";
 
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp", "application/pdf"];
-const MAX_SIZE_BYTES = 20 * 1024 * 1024; // 20MB — matches PRD §5.5 example
+const MAX_SIZE_BYTES = 10 * 1024 * 1024;
 
 function getFileIcon(mimeType: string) {
   if (mimeType.startsWith("image/")) return ImageIcon;

@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { UploadDropzone } from "@/components/shared/UploadDropzone";
 import { Input, FieldError } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useCreateDocument } from "@/features/documents/hooks";
+import { useCreateDocumentWithFiles } from "@/features/documents/hooks";
 import { useCategories } from "@/features/categories/hooks";
 
 const schema = z.object({
@@ -25,7 +25,7 @@ export default function NewDocumentPage() {
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const { data: categories } = useCategories();
-  const { mutateAsync, isPending } = useCreateDocument();
+  const { mutateAsync, isPending, fileProgress } = useCreateDocumentWithFiles();
 
   const {
     register,
@@ -85,7 +85,26 @@ export default function NewDocumentPage() {
         <div>
           <label className="mb-1.5 block text-sm font-medium text-text-primary">Files</label>
           <UploadDropzone files={files} onFilesChange={setFiles} />
+          <p className="mt-1.5 text-xs text-text-muted">
+            Files upload directly to storage in parallel — up to 10MB each.
+          </p>
         </div>
+
+        {isPending && Object.keys(fileProgress).length > 0 && (
+          <div className="space-y-2 rounded-md border border-border-subtle bg-surface p-3">
+            {Object.entries(fileProgress).map(([name, percent]) => (
+              <div key={name}>
+                <div className="flex justify-between text-xs text-text-secondary">
+                  <span className="truncate">{name}</span>
+                  <span>{percent}%</span>
+                </div>
+                <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
+                  <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${percent}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="flex justify-end gap-2 border-t border-border-subtle pt-4">
           <Button type="button" variant="secondary" onClick={() => router.push("/documents")}>

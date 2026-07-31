@@ -1,7 +1,8 @@
 import { apiClient } from "@/lib/api-client";
 import type { PaginatedResponse, SuccessResponse } from "@/types/api-response";
 import type { Document } from "@/types/entities";
-import type { DocumentsQuery, CreateDocumentPayload, UpdateDocumentPayload } from "./types";
+import type { UploadSignature, UploadedFileMeta } from "@/lib/cloudinary-upload";
+import type { DocumentsQuery, CreateDocumentMetadata, UpdateDocumentPayload } from "./types";
 
 function toQueryString(query: DocumentsQuery): string {
   const params = new URLSearchParams();
@@ -25,15 +26,18 @@ export const documentsApi = {
     return res.data;
   },
 
-  createDocument: async (payload: CreateDocumentPayload) => {
-    const formData = new FormData();
-    formData.set("title", payload.title);
-    if (payload.description) formData.set("description", payload.description);
-    if (payload.categoryId) formData.set("categoryId", payload.categoryId);
-    if (payload.documentDate) formData.set("documentDate", payload.documentDate);
-    payload.files?.forEach((file) => formData.append("files", file));
+  createDocument: async (payload: CreateDocumentMetadata) => {
+    const res = await apiClient.post<SuccessResponse<Document>>("/documents", payload);
+    return res.data;
+  },
 
-    const res = await apiClient.post<SuccessResponse<Document>>("/documents", formData);
+  getUploadSignature: async () => {
+    const res = await apiClient.get<SuccessResponse<UploadSignature>>("/documents/upload-signature");
+    return res.data;
+  },
+
+  attachFiles: async (id: string, files: UploadedFileMeta[]) => {
+    const res = await apiClient.post<SuccessResponse<Document>>(`/documents/${id}/attach-files`, { files });
     return res.data;
   },
 
