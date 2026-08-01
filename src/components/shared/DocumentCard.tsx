@@ -16,6 +16,7 @@ import { formatBytes, formatDate } from "@/lib/format";
 import { getThumbnailUrl } from "@/lib/cloudinary";
 import { cn } from "@/lib/cn";
 import type { Document } from "@/types/entities";
+import { DeleteConfirmDialog } from "@/components/shared/DeleteConfirmDialog";
 
 function getFileIcon(mimeType?: string) {
   if (!mimeType) return FileIcon;
@@ -153,12 +154,11 @@ export function DocumentCard({
         </div>
       </div>
 
-      <ConfirmDialog
+      <DeleteConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         title="Delete document?"
         description={`"${document.title}" will be moved to trash. This can't be undone from here.`}
-        confirmLabel="Delete"
         isLoading={isPending}
         onConfirm={() => deleteDocument(document.id, { onSuccess: () => setConfirmOpen(false) })}
       />

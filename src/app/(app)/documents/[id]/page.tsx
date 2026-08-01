@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useDocument, useUpdateDocument, useDeleteDocument } from "@/features/documents/hooks";
 import { useCategories } from "@/features/categories/hooks";
 import { formatBytes, formatDate } from "@/lib/format";
-
+import { DeleteConfirmDialog } from "@/components/shared/DeleteConfirmDialog";
 const schema = z.object({
   title: z.string().min(1, "Title is required").max(150),
   description: z.string().optional(),
@@ -238,19 +238,18 @@ export default function DocumentDetailPage() {
         </div>
       </form>
 
-      <ConfirmDialog
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
-        title="Delete document?"
-        description={deleteDescription}
-        confirmLabel="Delete"
-        isLoading={isDeleting}
-        onConfirm={() =>
-          deleteDocument(document.id, {
-            onSuccess: () => router.push("/documents"),
-          })
-        }
-      />
+     <DeleteConfirmDialog
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      title="Delete document?"
+      description={deleteDescription}
+      isLoading={isDeleting}
+      onConfirm={() =>
+        deleteDocument(document.id, {
+          onSuccess: () => router.push("/documents"),
+        })
+      }
+    />
     </div>
   );
 }
